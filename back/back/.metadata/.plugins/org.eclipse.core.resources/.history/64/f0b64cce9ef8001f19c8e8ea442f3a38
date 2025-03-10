@@ -1,0 +1,20 @@
+package com.example.hansei.mypage.repository;
+
+import com.example.hansei.mypage.entity.CpFavoriteBoard;
+import com.example.hansei.entity.CampusBoard;
+import com.example.hansei.entity.HanUser;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+import java.util.Optional;
+
+@Repository
+public interface CpFavoriteBoardRepository extends JpaRepository<CpFavoriteBoard, Long> {
+
+    // ✅ 특정 사용자의 즐겨찾기 목록 조회 (삭제되지 않은 것만)
+    List<CpFavoriteBoard> findByUser_UserIdAndIsDeletedFalse(Long userId);
+
+    // ✅ 특정 사용자의 특정 캠퍼스 게시글 즐겨찾기 여부 확인
+    Optional<CpFavoriteBoard> findByUserAndCampusBoard(HanUser user, CampusBoard campusBoard);
+}

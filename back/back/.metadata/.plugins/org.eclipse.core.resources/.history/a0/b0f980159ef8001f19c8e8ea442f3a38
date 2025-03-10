@@ -1,0 +1,63 @@
+package com.example.hansei.mypage.controller;
+
+import com.example.hansei.entity.CampusBoard;
+import com.example.hansei.entity.HanUser;
+import com.example.hansei.mypage.service.CpFavoriteBoardService;
+import com.example.hansei.security.user.CustomUser;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/cp-favorites")
+@RequiredArgsConstructor
+public class CpFavoriteBoardController {
+
+    private final CpFavoriteBoardService cpFavoriteBoardService;
+
+    // ✅ 특정 사용자의 즐겨찾기 목록 조회
+    @GetMapping("/my-favorites")
+    public ResponseEntity<List<CampusBoard>> getUserFavorites(@AuthenticationPrincipal CustomUser customUser) {
+        if (customUser == null) {
+            return ResponseEntity.status(401).build();
+        }
+
+        List<CampusBoard> favorites = cpFavoriteBoardService.getFavoriteBoards(customUser.getUser().getUserId());
+        return ResponseEntity.ok(favorites);
+    }
+
+    // ✅ 즐겨찾기 추가
+    @PostMapping("/{boardId}")
+    public ResponseEntity<String> addFavorite(@AuthenticationPrincipal CustomUser customUser,
+                                              @PathVariable Long boardId) {
+        if (customUser == null) {
+            return ResponseEntity.status(401).build();
+        }
+
+        HanUser user = customUser.getUser();
+        CampusBoard campusBoard = new CampusBoard(); // ✅ 실제 CampusBoard 데이터 가져와야 함
+        campusBoard.setId(boardId);
+
+        cpFavoriteBoardService.addFavorite(user, campusBoard);
+        return ResponseEntity.ok("즐겨찾기에 추가되었습니다.");
+    }
+
+    // ✅ 즐겨찾기 삭제 (Soft Delete)
+    @DeleteMapping("/{boardId}")
+    public ResponseEntity<String> removeFavorite(@AuthenticationPrincipal CustomUser customUser,
+                                                 @PathVariable Long boardId) {
+        if (customUser == null) {
+            return ResponseEntity.status(401).build();
+        }
+
+        HanUser user = customUser.getUser();
+        CampusBoard campusBoard = new CampusBoard(); // ✅ 실제 CampusBoard 데이터 가져와야 함
+        campusBoard.setId(boardId);
+
+        cpFavoriteBoardService.removeFavorite(user, campusBoard);
+        return ResponseEntity.ok("즐겨찾기가 해제되었습니다.");
+    }
+}

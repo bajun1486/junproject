@@ -1,0 +1,5 @@
+package com.example.hansei.mypage.repository;
+
+public interface FavoriteBoardRepository {
+
+}

@@ -1,0 +1,49 @@
+package com.example.hansei.mypage.controller;
+
+import java.util.List;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.example.hansei.entity.HanUser;
+import com.example.hansei.mypage.service.FavoriteBoardService;
+import com.example.hansei.recruitment.dto.SuggestBoardDto;
+
+import lombok.RequiredArgsConstructor;
+
+@RestController
+@RequestMapping("/api/favorites")
+@RequiredArgsConstructor
+public class FavoriteBoardController {
+
+    private final FavoriteBoardService favoriteBoardService;
+
+    // 📌 즐겨찾기 추가
+    @PostMapping("/{boardId}")
+    public ResponseEntity<String> addFavorite(@AuthenticationPrincipal HanUser user,
+                                              @PathVariable Long boardId) {
+        favoriteBoardService.addFavorite(user.getUserId(), boardId);
+        return ResponseEntity.ok("즐겨찾기에 추가되었습니다.");
+    }
+
+    // 📌 즐겨찾기 취소
+    @DeleteMapping("/{boardId}")
+    public ResponseEntity<String> removeFavorite(@AuthenticationPrincipal HanUser user,
+                                                 @PathVariable Long boardId) {
+        favoriteBoardService.removeFavorite(user.getUserId(), boardId);
+        return ResponseEntity.ok("즐겨찾기가 취소되었습니다.");
+    }
+
+    // 📌 즐겨찾기한 게시글 목록 조회
+    @GetMapping
+    public ResponseEntity<List<SuggestBoardDto>> getFavoriteBoards(@AuthenticationPrincipal HanUser user) {
+        List<SuggestBoardDto> favoriteBoards = favoriteBoardService.getFavoriteBoards(user.getUserId());
+        return ResponseEntity.ok(favoriteBoards);
+    }
+}

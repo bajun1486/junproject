@@ -1,0 +1,56 @@
+package com.example.hansei.mypage.service;
+
+import com.example.hansei.entity.CampusBoard;
+import com.example.hansei.entity.HanUser;
+import com.example.hansei.mypage.entity.CpFavoriteBoard;
+import com.example.hansei.mypage.repository.CpFavoriteBoardRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+@Service
+@RequiredArgsConstructor
+public class CpFavoriteBoardService {
+
+    private final CpFavoriteBoardRepository cpFavoriteBoardRepository;
+
+    // ✅ 특정 사용자의 즐겨찾기 목록 조회
+    public List<CampusBoard> getFavoriteBoards(Long userId) {
+        List<CpFavoriteBoard> favorites = cpFavoriteBoardRepository.findByUser_UserIdAndIsDeletedFalse(userId);
+        return favorites.stream()
+                .map(CpFavoriteBoard::getCampusBoard) // ✅ CampusBoard 정보만 반환
+                .collect(Collectors.toList());
+    }
+
+    // ✅ 즐겨찾기 추가
+    @Transactional
+    public void addFavorite(HanUser user, CampusBoard campusBoard) {
+        Optional<CpFavoriteBoard> existingFavorite = cpFavoriteBoardRepository.findByUserAndCampusBoard(user, campusBoard);
+
+        if (existingFavorite.isPresent()) {
+            CpFavoriteBoard favorite = existingFavorite.get();
+            if (favorite.isDeleted()) {
+                favorite.setDeleted(false); // Soft Delete 복구
+                cpFavoriteBoardRepository.save(favorite);
+            }
+        } else {
+            CpFavoriteBoard newFavorite = CpFavoriteBoard.builder()
+                    .user(user)
+                    .campusBoard(campusBoard)
+                    .isDeleted(false)
+                    .build();
+            cpFavoriteBoardRepository.save(newFavorite);
+        }
+    }
+
+    // ✅ 즐겨찾기 삭제 (Soft Delete 적용)
+    @Transactional
+    public void removeFavorite(HanUser user, CampusBoard campusBoard) {
+        Optional<CpFavoriteBoard> existingFavorite = cpFavoriteBoardRepository.findByUserAndCampusBoard(user, campusBoard);
+        existingFavorite.ifPresent(CpFavoriteBoard::softDelete);
+    }
+}

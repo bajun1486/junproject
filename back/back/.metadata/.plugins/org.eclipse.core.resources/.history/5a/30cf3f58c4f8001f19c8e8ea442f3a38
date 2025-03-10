@@ -1,0 +1,5 @@
+package com.example.hansei.recruitmentapi.entity;
+
+public class EventFavorite {
+
+}

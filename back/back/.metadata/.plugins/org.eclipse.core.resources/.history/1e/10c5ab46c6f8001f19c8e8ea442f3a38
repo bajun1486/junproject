@@ -1,0 +1,5 @@
+package com.example.hansei.recruitmentapi.controller;
+
+public class EventFavoriteController {
+
+}
